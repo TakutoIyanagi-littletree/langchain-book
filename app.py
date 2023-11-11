@@ -1,3 +1,4 @@
+#インポート
 import os
 
 import streamlit as st
@@ -8,10 +9,12 @@ from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.prompts import MessagesPlaceholder
 
+#環境変数をロード
 load_dotenv()
 
-
+#LangChainを使用し、ChatGPTを拡張
 def create_agent_chain():
+    #環境変数の整備、ストリーミング出力
     chat = ChatOpenAI(
         model_name=os.environ["OPENAI_API_MODEL"],
         temperature=os.environ["OPENAI_API_TEMPERATURE"],

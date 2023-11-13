@@ -17,6 +17,7 @@ dataclasses-json==0.6.1
 duckduckgo-search==3.9.3
 exceptiongroup==1.1.3
 frozenlist==1.4.0
+faiss-gpu
 gitdb==4.0.11
 GitPython==3.1.40
 greenlet==3.0.1

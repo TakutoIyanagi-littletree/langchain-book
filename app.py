@@ -1,65 +1,50 @@
-#インポート
 import os
 
-import streamlit as st
 from dotenv import load_dotenv
-from langchain.agents import AgentType, initialize_agent, load_tools
-from langchain.callbacks import StreamlitCallbackHandler
+import openai
+import streamlit as st
 from langchain.chat_models import ChatOpenAI
-from langchain.memory import ConversationBufferMemory
-from langchain.prompts import MessagesPlaceholder
+from langchain.chains import RetrievalQA
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.vectorstores import FAISS
 
-#環境変数をロード
 load_dotenv()
+openai.api_key = os.environ["OPENAI_API_KEY"]
+FAISS_DB_DIR = os.environ["FAISS_DB_DIR"]
 
-#LangChainを使用し、ChatGPTを拡張
-def create_agent_chain():
-    #環境変数の整備、ストリーミング出力
-    chat = ChatOpenAI(
-        model_name=os.environ["OPENAI_API_MODEL"],
-        temperature=os.environ["OPENAI_API_TEMPERATURE"],
-        streaming=True,
-    )
+MODEL_NAME = "gpt-3.5-turbo-16k-0613"
+MODEL_TEMPERATURE = 0.9
 
-    agent_kwargs = {
-        "extra_prompt_messages": [MessagesPlaceholder(variable_name="memory")],
-    }
-    memory = ConversationBufferMemory(memory_key="memory", return_messages=True)
+st.title("Hakky ChatBot")
 
-    tools = load_tools(["ddg-search", "wikipedia"])
-    return initialize_agent(
-        tools,
-        chat,
-        agent=AgentType.OPENAI_FUNCTIONS,
-        agent_kwargs=agent_kwargs,
-        memory=memory,
-    )
-
-
-if "agent_chain" not in st.session_state:
-    st.session_state.agent_chain = create_agent_chain()
-
-
-st.title("langchain-streamlit-app")
-
+# メッセージ履歴を保持するリストの定義
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+# メッセージ履歴の表示
+if "messages" in st.session_state:
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-prompt = st.chat_input("What is up?")
+if prompt := st.chat_input("Hakkyについて知りたいことはありますか？"):
 
-if prompt:
+    # ユーザーによる質問の保存・表示
     st.session_state.messages.append({"role": "user", "content": prompt})
-
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    with st.chat_message("assistant"):
-        callback = StreamlitCallbackHandler(st.container())
-        response = st.session_state.agent_chain.run(prompt, callbacks=[callback])
-        st.markdown(response)
+    model = ChatOpenAI(model=MODEL_NAME, temperature=MODEL_TEMPERATURE, client=openai.ChatCompletion)
+    faiss_db = FAISS.load_local(FAISS_DB_DIR, embeddings=OpenAIEmbeddings(client=openai.ChatCompletion))
 
-    st.session_state.messages.append({"role": "assistant", "content": response})
+    # LLMによる回答の生成
+    qa = RetrievalQA.from_chain_type(llm=model, chain_type="stuff", retriever=faiss_db.as_retriever())
+    query = f"あなたはHakkyについての質問に答えるChatBotです。次の質問に答えてください。:{prompt}"
+    res = qa.run(query)
+
+    # LLMによる回答の表示
+    with st.chat_message("assistant"):
+        st.markdown(res)
+
+    # LLMによる回答の保存
+    st.session_state.messages.append({"role": "assistant", "content": res})

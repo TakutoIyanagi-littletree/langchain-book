@@ -10,7 +10,7 @@ from langchain.vectorstores import FAISS
 
 load_dotenv()
 openai.api_key = os.environ["OPENAI_API_KEY"]
-FAISS_DB_DIR = os.environ["FAISS_DB_DIR"]
+FAISS_DB_DIR = os.environ.get("FAISS_DB_DIR", "/faiss_index/")
 
 MODEL_NAME = "gpt-3.5-turbo-16k-0613"
 MODEL_TEMPERATURE = 0.9

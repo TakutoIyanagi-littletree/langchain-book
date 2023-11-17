@@ -25,7 +25,7 @@ def doc_preprocessing() :
     )
     docs = loader.load()
     text_splitter = CharacterTextSplitter(
-        chunk_size=1000,
+        chunk_size=500,
         chunk_overlap=0
     )
     docs_split = text_splitter.split_documents(docs)

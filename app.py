@@ -42,7 +42,7 @@ def doc_preprocessing() :
 def embedding_db():
     embeddings = OpenAIEmbeddings()
     docs_split = doc_preprocessing()
-    doc_db = pinecone_store.from_documents(
+    doc_db = pinecone.from_documents(
         docs_split,
         embeddings,
         index_name='st-app'

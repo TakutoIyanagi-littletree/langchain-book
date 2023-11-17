@@ -16,6 +16,13 @@ PINECONE_ENV = os.getenv('PINECONE_ENV')
 
 os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 
+pinecone.init(
+        api_key=PINECONE_API_KEY,
+        environment=PINECONE_ENV,
+    )
+
+from langchain.vectorstores import pinecone
+
 def doc_preprocessing() :
     loader = DirectoryLoader(
         'data/',
@@ -34,12 +41,7 @@ def doc_preprocessing() :
 @st.cache_resource
 def embedding_db():
     embeddings = OpenAIEmbeddings()
-    pinecone.init(
-        api_key=PINECONE_API_KEY,
-        environment=PINECONE_ENV,
-    )
     docs_split = doc_preprocessing()
-    from langchain.vectorstores import pinecone
     doc_db = pinecone_store.from_documents(
         docs_split,
         embeddings,

@@ -69,7 +69,7 @@ def handle_userinput(user_question):
 def main():
     load_dotenv()
     st.set_page_config(page_title="Tok AI 1.0",
-                       page_icon="&#128516;")
+                       page_icon="🤖")
     st.write(css, unsafe_allow_html=True)
 
     if "conversation" not in st.session_state:

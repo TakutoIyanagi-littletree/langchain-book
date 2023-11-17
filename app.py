@@ -1,50 +1,73 @@
+from langchain.document_loaders import DirectoryLoader
+from langchain.text_splitter import CharacterTextSplitter
 import os
-
-from dotenv import load_dotenv
-import openai
-import streamlit as st
-from langchain.chat_models import ChatOpenAI
-from langchain.chains import RetrievalQA
+import pinecone
+from langchain.vectorstores import pinecone as pinecone_store
 from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.vectorstores import FAISS
+from langchain.chains import RetrievalQA
+from langchain.chat_models import ChatOpenAI
+import streamlit as st
+from dotenv import load_dotenv
 
 load_dotenv()
-openai.api_key = os.environ["OPENAI_API_KEY"]
-FAISS_DB_DIR = os.environ.get("FAISS_DB_DIR", "/faiss_index/")
 
-MODEL_NAME = "gpt-3.5-turbo-16k-0613"
-MODEL_TEMPERATURE = 0.9
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
+PINECONE_ENV = os.getenv('PINECONE_ENV')
 
-st.title("Hakky ChatBot")
+os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 
-# メッセージ履歴を保持するリストの定義
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+def doc_preprocessing() :
+    loader = DirectoryLoader(
+        'data/',
+        glob = '**/*.pdf', 
+        show_progress =True
+    )
+    docs = loader.load()
+    text_splitter = CharacterTextSplitter(
+        chunk_size=1000,
+        chunk_overlap=0
+    )
+    docs_split = text_splitter.split_documents(docs)
+    return docs_split
+        
+        
+@st.cache_resource
+def embedding_db():
+    embeddings = OpenAIEmbeddings()
+    pinecone.init(
+        api_key=PINECONE_API_KEY,
+        environment=PINECONE_ENV,
+    )
+    docs_split = doc_preprocessing()
+    doc_db = pinecone.from_documents(
+        docs_split,
+        embeddings,
+        index_name='st-app'
+    )
+    return doc_db
+    
+llm = ChatOpenAI()
+doc_db = embedding_db()
 
-# メッセージ履歴の表示
-if "messages" in st.session_state:
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+def retrieval_answer(query):
+    qa = RetrievalQA.from_chain_type(
+        llm = llm,
+        chain_type='stuff',
+        retriever = doc_db.as_retriever(),
+        query = query,
+    )
+    result = qa.run(query)
+    return result
+    
+def main():
+    st.tittle("Question and Answering App powerd by LLM and pinecone")
+    text_input = st.text_input("Ask your query")
+    if st.button("Ask Query"):
+        if len(text_input) > 0:
+            st.info("Your query:" + text_input)
+            answer = retrieval_answer(text_input)
+            st.success(answer)
 
-if prompt := st.chat_input("Hakkyについて知りたいことはありますか？"):
-
-    # ユーザーによる質問の保存・表示
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
-    model = ChatOpenAI(model=MODEL_NAME, temperature=MODEL_TEMPERATURE, client=openai.ChatCompletion)
-    faiss_db = FAISS.load_local(FAISS_DB_DIR, embeddings=OpenAIEmbeddings(client=openai.ChatCompletion))
-
-    # LLMによる回答の生成
-    qa = RetrievalQA.from_chain_type(llm=model, chain_type="stuff", retriever=faiss_db.as_retriever())
-    query = f"あなたはHakkyについての質問に答えるChatBotです。次の質問に答えてください。:{prompt}"
-    res = qa.run(query)
-
-    # LLMによる回答の表示
-    with st.chat_message("assistant"):
-        st.markdown(res)
-
-    # LLMによる回答の保存
-    st.session_state.messages.append({"role": "assistant", "content": res})
+if __name__ == "__maln__":
+    main()

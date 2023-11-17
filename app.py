@@ -2,6 +2,7 @@ from langchain.document_loaders import DirectoryLoader
 from langchain.text_splitter import CharacterTextSplitter
 import os
 import pinecone
+from langchain.vectorstores import Pinecone
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOpenAI
@@ -15,13 +16,6 @@ PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
 PINECONE_ENV = os.getenv('PINECONE_ENV')
 
 os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
-
-pinecone.init(
-        api_key=PINECONE_API_KEY,
-        environment=PINECONE_ENV,
-    )
-
-from langchain.vectorstores import pinecone
 
 def doc_preprocessing() :
     loader = DirectoryLoader(
@@ -41,8 +35,12 @@ def doc_preprocessing() :
 @st.cache_resource
 def embedding_db():
     embeddings = OpenAIEmbeddings()
+    pinecone.init(
+        api_key=PINECONE_API_KEY,
+        environment=PINECONE_ENV,
+    )    
     docs_split = doc_preprocessing()
-    doc_db = pinecone.from_documents(
+    doc_db = Pinecone.from_documents(
         docs_split,
         embeddings,
         index_name='st-app'

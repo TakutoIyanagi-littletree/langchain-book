@@ -2,7 +2,7 @@ from langchain.document_loaders import DirectoryLoader
 from langchain.text_splitter import CharacterTextSplitter
 import os
 import pinecone
-from langchain.vectorstores import pinecone
+from langchain.vectorstores import pinecone as pinecone_store
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOpenAI
@@ -40,7 +40,7 @@ def embedding_db():
         environment=PINECONE_ENV,
     )
     docs_split = doc_preprocessing()
-    doc_db = pinecone.from_documents(
+    doc_db = pinecone_store.from_documents(
         docs_split,
         embeddings,
         index_name='st-app'

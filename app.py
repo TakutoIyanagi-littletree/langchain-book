@@ -68,7 +68,7 @@ def handle_userinput(user_question):
 
 def main():
     load_dotenv()
-    st.set_page_config(page_title="Chat with multiple PDFs",
+    st.set_page_config(page_title="Tok AI 1.0",
                        page_icon=":books:")
     st.write(css, unsafe_allow_html=True)
 
@@ -77,16 +77,16 @@ def main():
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = None
 
-    st.header("Chat with multiple PDFs :books:")
-    user_question = st.text_input("Ask a question about your documents:")
+    st.header("Tok AI 1.0 :books:")
+    user_question = st.text_input("東海大学に関する質問は、なんでもどうぞ")
     if user_question:
         handle_userinput(user_question)
 
     with st.sidebar:
         st.subheader("Your documents")
         pdf_docs = st.file_uploader(
-            "Upload your PDFs here and click on 'Process'", accept_multiple_files=True)
-        if st.button("Process"):
+            "PDFをアップロードし、「解析」ボタンを押してください", accept_multiple_files=True)
+        if st.button("解析"):
             with st.spinner("Processing"):
                 # get pdf text
                 raw_text = get_pdf_text(pdf_docs)

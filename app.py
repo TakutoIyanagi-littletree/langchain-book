@@ -68,7 +68,7 @@ def handle_userinput(user_question):
 
 def main():
     load_dotenv()
-    st.set_page_config(page_title="Tok AI 1.0",
+    st.set_page_config(page_title="TokAI 1.0",
                        page_icon="🤖")
     st.write(css, unsafe_allow_html=True)
 
@@ -77,13 +77,13 @@ def main():
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = None
 
-    st.header("Tok AI 1.0 :books:")
+    st.header("TokAI 1.0 🤖")
     user_question = st.text_input("東海大学に関する質問は、なんでもどうぞ")
     if user_question:
         handle_userinput(user_question)
 
     with st.sidebar:
-        st.subheader("Your documents")
+        st.subheader("📚")
         pdf_docs = st.file_uploader(
             "PDFをアップロードし、「解析」ボタンを押してください", accept_multiple_files=True)
         if st.button("解析"):

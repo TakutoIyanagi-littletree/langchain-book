@@ -7,7 +7,9 @@ from langchain.callbacks import StreamlitCallbackHandler
 from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.prompts import MessagesPlaceholder
+from langchain.vectorstores import FAISS
 from langchain.tools.base import BaseTool
+
 
 load_dotenv()
 

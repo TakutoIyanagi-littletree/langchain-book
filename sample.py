@@ -11,33 +11,6 @@ from langchain.tools.base import BaseTool
 
 load_dotenv()
 
-'''
-### FAISS vectorのロード
-vectoreStore = FAISS.load_local("faiss_index/", OpenAIEmbeddings())
-## Retriever
-retriever = vectoreStore.as_retriever(search_type="similarity", search_kwargs={"k":3})
-
-### プロンプト(Q&A)
-qa = RetrievalQA.from_chain_type(llm=ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo-16k"), chain_type="stuff", retriever=retriever, return_source_documents=False)
-'''
-'''
-class CustomSearchTool(BaseTool):
-    def _run(self, input):
-        # RetrievalQA の使用
-        qa = RetrievalQA.from_chain_type(
-            llm=ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo-16k"), 
-            chain_type="stuff", 
-            retriever=self.retriever, 
-            return_source_documents=False
-        )
-        return qa.run(input)  # 入力に対して qa.run メソッドを実行
-
-# カスタムツールのインスタンスを作成
-custom_tool = [CustomSearchTool()]
-
-# 他のコード
-'''
-
 # エージェントチェーンの作成
 def create_agent_chain():
     ### FAISS vectorのロード

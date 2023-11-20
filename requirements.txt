@@ -5,3 +5,4 @@ langchain
 sentence-transformers
 pypdf
 faiss-gpu
+llama_index

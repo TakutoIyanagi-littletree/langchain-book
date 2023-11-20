@@ -11,6 +11,7 @@ from langchain.chains import ConversationalRetrievalChain
 from htmlTemplates import css, bot_template, user_template
 from langchain.llms import HuggingFaceHub
 
+#PDFを受け取る
 def get_pdf_text(pdf_docs):
     text = ""
     for pdf in pdf_docs:
@@ -19,7 +20,7 @@ def get_pdf_text(pdf_docs):
             text += page.extract_text()
     return text
 
-
+#PDFのテキストをチャンク毎に分ける
 def get_text_chunks(text):
     text_splitter = CharacterTextSplitter(
         separator="\n",
@@ -30,18 +31,15 @@ def get_text_chunks(text):
     chunks = text_splitter.split_text(text)
     return chunks
 
-
+#FAISSを使って、ベクトルを格納
 def get_vectorstore(text_chunks):
     embeddings = OpenAIEmbeddings()
-    # embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-xl")
     vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
     return vectorstore
 
-
+#会話履歴等を保存し、会話のチャットを作り出す
 def get_conversation_chain(vectorstore):
     llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo-16k")
-    # llm = HuggingFaceHub(repo_id="google/flan-t5-xxl", model_kwargs={"temperature":0.5, "max_length":512})
-
     memory = ConversationBufferMemory(
         memory_key='chat_history', return_messages=True
     )
@@ -52,7 +50,7 @@ def get_conversation_chain(vectorstore):
     )
     return conversation_chain
 
-
+#これまで定義したものをStreamlitで表示する
 def handle_userinput(user_question):
     response = st.session_state.conversation({'question': user_question})
     st.session_state.chat_history = response['chat_history']

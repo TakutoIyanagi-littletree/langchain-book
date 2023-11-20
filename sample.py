@@ -1,5 +1,5 @@
 import os
-
+import openai
 import streamlit as st
 from dotenv import load_dotenv
 from langchain.agents import AgentType, initialize_agent, load_tools
@@ -9,6 +9,10 @@ from langchain.memory import ConversationBufferMemory
 from langchain.prompts import MessagesPlaceholder
 from langchain.vectorstores import FAISS
 from langchain.tools.base import BaseTool
+from langchain.chains import RetrievalQA
+from langchain.prompts import PromptTemplate
+from langchain.agents import AgentType, initialize_agent, load_tools
+from langchain.embeddings.openai import OpenAIEmbeddings
 
 
 load_dotenv()

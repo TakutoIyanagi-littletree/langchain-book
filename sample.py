@@ -17,7 +17,7 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 
 load_dotenv()
 
-openai_api_key=os.environ["OPENAI_API_KEY"]
+#openai_api_key=os.environ["OPENAI_API_KEY"]
 
 # エージェントチェーンの作成
 def create_agent_chain():
